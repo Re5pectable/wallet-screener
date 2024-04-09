@@ -1,0 +1,6 @@
+alembic
+apscheduler
+asyncpg
+httpx
+redis
+sqlalchemy[asyncio]
