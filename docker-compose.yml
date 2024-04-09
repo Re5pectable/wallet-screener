@@ -1,0 +1,50 @@
+version: "3.8"
+
+x-environment: &environment
+  DEBUG: ${DEBUG}
+
+  DB_HOST: wallet-screener-postgres
+  DB_NAME: ${DB_NAME}
+  DB_USERNAME: ${DB_USERNAME}
+  DB_PASSWORD: ${DB_PASSWORD}
+
+services:
+  wallet-screener-parser:
+    container_name: wallet-screener-parser
+    build: ./src
+    command: python -m src.core.parser
+    volumes:
+      - ./src:/usr/app/src
+    environment:
+      <<: *environment
+    depends_on:
+      - wallet-screener-postgres
+
+  wallet-screener-postgres:
+    container_name: wallet-screener-postgres
+    image: postgres:16
+    ports:
+      - 5400:5432
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - v_wallet-screener_postgres:/var/lib/postgresql/data
+
+  wallet-screener-grafana:
+    container_name: wallet-screener-grafana
+    image: grafana/grafana:latest
+    depends_on:
+      - wallet-screener-postgres
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: 'admin'
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    volumes:
+      - v_wallet-screener_grafana:/var/lib/grafana
+
+volumes:
+  v_wallet-screener_postgres:
+  v_wallet-screener_grafana:
