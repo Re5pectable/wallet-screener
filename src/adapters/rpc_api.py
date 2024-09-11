@@ -1,7 +1,5 @@
 from httpx import AsyncClient
 
-from ..utils import exclude_none_from_dict
-
 
 class EVMError(Exception):
     pass
@@ -24,9 +22,9 @@ class RPC_API:
         async with AsyncClient() as c:
             response = await c.post(self.__endpoint, headers=headers, json=payload)
             data: dict = response.json()
-            if data.get('result'):
-                return data['result']
-            raise EVMError['error']['message']
+            if 'result' in data.keys():
+                return data['result']    
+            raise ValueError(data['error'])
 
     async def getLogs(
         self,
@@ -35,15 +33,21 @@ class RPC_API:
         address: str | list[str] = None,
         topics: list[str] = None,
     ):
-        params = exclude_none_from_dict(
-            {
-                "fromBlock": from_block,
-                "toBlock": to_block,
-                "topics": topics,
-                "address": address,
-            }
-        )
-        return await self.__request("eth_getLogs", [params])
+        params = [{
+            "fromBlock": from_block,
+            "toBlock": to_block,
+            "topics": topics,
+            "address": address,
+        }]
+        return await self.__request("eth_getLogs", params)
+    
+    async def getReceipt(self, txn_hash: str):
+        params = [txn_hash]
+        return await self.__request("eth_getTransactionReceipt", params)
+    
+    async def getTransactionByHash(self, txn_hash: str):
+        params = [txn_hash]
+        return await self.__request("eth_getTransactionByHash", params)
     
     async def blockNumber(self):
         return await self.__request("eth_blockNumber", [])

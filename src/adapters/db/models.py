@@ -19,8 +19,8 @@ class TokenOrm(Base):
     id = sa.Column(sa.Integer(), primary_key=True, autoincrement=True)
     created_at = sa.Column(sa.DateTime(), server_default=func.now())
     network_id = sa.Column(sa.Integer(), sa.ForeignKey("networks.id"))
+    address = sa.Column(sa.String(), index=True)
     symbol = sa.Column(sa.String())
-    address = sa.Column(sa.String())
     decimals = sa.Column(sa.Integer())
     is_stable = sa.Column(sa.Boolean(), default=False)
 
@@ -35,7 +35,7 @@ class TraderOrm(Base):
 class PoolOrm(Base):
     __tablename__ = "pools"
     id = sa.Column(sa.Integer(), primary_key=True, autoincrement=True)
-    created_at = sa.Column(sa.DateTime(), default=func.now())
+    created_at = sa.Column(sa.DateTime(), default=func.now(), index=True)
     network_id = sa.Column(sa.Integer(), sa.ForeignKey("networks.id"))
     contract = sa.Column(sa.String(), index=True)
     token0_id = sa.Column(sa.Integer(), sa.ForeignKey("tokens.id"))
@@ -43,21 +43,28 @@ class PoolOrm(Base):
     type = sa.Column(sa.String(32))
 
 
-class SwapOrm(Base):
-    __tablename__ = "swaps"
-    id = sa.Column(sa.BigInteger, primary_key=True, autoincrement=True)
+class TransactionOrm(Base):
+    __tablename__ = "transactions"
+    id = sa.Column(sa.BigInteger(), primary_key=True, autoincrement=True)
     created_at = sa.Column(sa.DateTime(), default=func.now(), index=True)
-    pool_id = sa.Column(sa.Integer(), sa.ForeignKey("pools.id"))
-    trader_id = sa.Column(sa.Integer(), sa.ForeignKey("trader.id"))
     txn_hash = sa.Column(sa.String(256))
-    pair_lp_id = sa.Column(sa.Integer, sa.ForeignKey("pair_lps.id"), index=True)
-    pool_token0_delta = sa.Column(postgresql.NUMERIC(64, 0))
-    pool_token1_delta = sa.Column(postgresql.NUMERIC(64, 0))
+    block_number = sa.Column(sa.Integer())
+    
+
+class SwapsOrm(Base):
+    __tablename__ = 'swaps'
+    id = sa.Column(sa.BigInteger(), primary_key=True, autoincrement=True)
+    created_at = sa.Column(sa.DateTime(), default=func.now(), index=True)
+    transaction_id = sa.Column(sa.BigInteger(), sa.ForeignKey("transactions.id"), index=True)
+    from_token_id = sa.Column(sa.Integer(), sa.ForeignKey("tokens.id"), index=True)
+    from_token_amount = sa.Column(sa.Numeric(60, 0))
+    to_token_id = sa.Column(sa.Integer(), sa.ForeignKey("tokens.id"), index=True)
+    to_token_amount = sa.Column(sa.Numeric(60, 0))
 
 
 class ErrorOrm(Base):
     __tablename__ = "errors"
-    id = sa.Column(sa.BigInteger, primary_key=True, autoincrement=True)
+    id = sa.Column(sa.BigInteger(), primary_key=True, autoincrement=True)
     created_at = sa.Column(sa.DateTime(), default=func.now(), index=True)
     action = sa.Column(sa.String(32))
     error = sa.Column(sa.String())

@@ -9,10 +9,10 @@ x-environment: &environment
   DB_PASSWORD: ${DB_PASSWORD}
 
 services:
-  wallet-screener-parser:
-    container_name: wallet-screener-parser
+  wallet-screener-scanner:
+    container_name: wallet-screener-scanner
     build: ./src
-    command: python -m src.core.parser
+    command: python -m src.domain.scanner
     volumes:
       - ./src:/usr/app/src
     environment:
@@ -24,26 +24,13 @@ services:
     container_name: wallet-screener-postgres
     image: postgres:16
     ports:
-      - 5400:5432
+      - 5432:5432
     environment:
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
     volumes:
       - v_wallet-screener_postgres:/var/lib/postgresql/data
-
-  wallet-screener-grafana:
-    container_name: wallet-screener-grafana
-    image: grafana/grafana:latest
-    depends_on:
-      - wallet-screener-postgres
-    ports:
-      - "3000:3000"
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: 'admin'
-      GF_USERS_ALLOW_SIGN_UP: 'false'
-    volumes:
-      - v_wallet-screener_grafana:/var/lib/grafana
 
 volumes:
   v_wallet-screener_postgres:

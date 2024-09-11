@@ -1,4 +1,4 @@
-from .models import SwapperOrm, NetworkOrm, SwapOrm, ErrorOrm
+from .models import SwapperOrm, NetworkOrm, TransactionOrm, ErrorOrm
 from .engine import Session
 from sqlalchemy import select
 
@@ -20,7 +20,7 @@ class Repository:
         
     @classmethod
     async def save_swaps(cls, swapper_id: int, data: list[dict]):
-        objs = [SwapOrm(swapper_id=swapper_id, **swap_log) for swap_log in data]
+        objs = [TransactionOrm(swapper_id=swapper_id, **swap_log) for swap_log in data]
         async with Session() as session:
             session.add_all(objs)
             await session.commit()
